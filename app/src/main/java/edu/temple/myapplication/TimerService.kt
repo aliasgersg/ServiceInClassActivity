@@ -3,11 +3,19 @@ package edu.temple.myapplication
 import android.app.Service
 import android.content.Intent
 import android.os.Binder
+import android.os.Handler
 import android.os.IBinder
+import android.os.Message
 import android.util.Log
+
+const val UPDATE_COUNTER = 1
+
+
 
 @Suppress("ControlFlowWithEmptyBody")
 class TimerService : Service() {
+
+    lateinit var timerHandler: Handler
 
     private var isRunning = false
 
@@ -17,8 +25,9 @@ class TimerService : Service() {
 
     inner class TimerBinder : Binder() {
 
+
         // Check if Timer is already running
-        var isRunning: Boolean
+        private var isRunning: Boolean
             get() = this@TimerService.isRunning
             set(value) {this@TimerService.isRunning = value}
 
@@ -75,6 +84,10 @@ class TimerService : Service() {
         }
     }
 
+    fun setHandler(Timerhandler: Handler){
+        timerHandler
+    }
+
     inner class TimerThread(private val startValue: Int) : Thread() {
 
         override fun run() {
@@ -85,6 +98,9 @@ class TimerService : Service() {
 
                         while (paused);
                         sleep(1000)
+                        if(::timerHandler.isInitialized) {
+                            timerHandler.sendEmptyMessage(i)
+                        }
 
                 }
                 isRunning = false
@@ -93,6 +109,7 @@ class TimerService : Service() {
                 isRunning = false
                 paused = false
             }
+
         }
 
     }
@@ -109,7 +126,10 @@ class TimerService : Service() {
         super.onDestroy()
 
         Log.d("TimerService status", "Destroyed")
+
     }
 
 
 }
+
+// implement the handler to have the serivce send the data back to the client and then put it in textview to show it a counter
