@@ -5,17 +5,10 @@ import android.content.Intent
 import android.os.Binder
 import android.os.Handler
 import android.os.IBinder
-import android.os.Message
 import android.util.Log
-
-const val UPDATE_COUNTER = 1
-
-
 
 @Suppress("ControlFlowWithEmptyBody")
 class TimerService : Service() {
-
-    lateinit var timerHandler: Handler
 
     private var isRunning = false
 
@@ -23,11 +16,12 @@ class TimerService : Service() {
 
     private var paused = false
 
+    lateinit var timerHandler: Handler
+
     inner class TimerBinder : Binder() {
 
-
         // Check if Timer is already running
-        private var isRunning: Boolean
+        var isRunning: Boolean
             get() = this@TimerService.isRunning
             set(value) {this@TimerService.isRunning = value}
 
@@ -60,6 +54,10 @@ class TimerService : Service() {
             return this@TimerService
         }
 
+        fun setHandler(handler: Handler) {
+            timerHandler = handler
+        }
+
     }
 
     override fun onCreate() {
@@ -84,10 +82,6 @@ class TimerService : Service() {
         }
     }
 
-    fun setHandler(Timerhandler: Handler){
-        timerHandler
-    }
-
     inner class TimerThread(private val startValue: Int) : Thread() {
 
         override fun run() {
@@ -96,11 +90,11 @@ class TimerService : Service() {
                 for (i in startValue downTo 1)  {
                     Log.d("Countdown", i.toString())
 
-                        while (paused);
-                        sleep(1000)
-                        if(::timerHandler.isInitialized) {
-                            timerHandler.sendEmptyMessage(i)
-                        }
+                    while (paused);
+
+                    if (::timerHandler.isInitialized) timerHandler.sendEmptyMessage(i)
+
+                    sleep(1000)
 
                 }
                 isRunning = false
@@ -109,9 +103,7 @@ class TimerService : Service() {
                 isRunning = false
                 paused = false
             }
-
         }
-
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
@@ -126,10 +118,7 @@ class TimerService : Service() {
         super.onDestroy()
 
         Log.d("TimerService status", "Destroyed")
-
     }
 
 
 }
-
-// implement the handler to have the serivce send the data back to the client and then put it in textview to show it a counter
