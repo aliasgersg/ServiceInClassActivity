@@ -3,13 +3,14 @@ package edu.temple.myapplication
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.widget.Button
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,7 +32,6 @@ class MainActivity : AppCompatActivity() {
         override fun onServiceDisconnected(name: ComponentName?) {
             isConnected = false
         }
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,22 +45,35 @@ class MainActivity : AppCompatActivity() {
             serviceConnection,
             BIND_AUTO_CREATE
         )
+    }
 
-        findViewById<Button>(R.id.startButton).setOnClickListener {
-            if (isConnected) timerBinder.start(100)
-        }
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main, menu)
+        return true
+    }
 
-        findViewById<Button>(R.id.pauseButton).setOnClickListener {
-            if (isConnected) timerBinder.pause()
-        }
-
-        findViewById<Button>(R.id.stopButton).setOnClickListener {
-            if (isConnected) timerBinder.stop()
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_start -> {
+                if (isConnected) timerBinder.start(100)
+                true
+            }
+            R.id.action_pause -> {
+                if (isConnected) timerBinder.pause()
+                true
+            }
+            R.id.action_stop -> {
+                if (isConnected) timerBinder.stop()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
     override fun onDestroy() {
-        unbindService(serviceConnection)
+        if (isConnected) {
+            unbindService(serviceConnection)
+        }
         super.onDestroy()
     }
 }
